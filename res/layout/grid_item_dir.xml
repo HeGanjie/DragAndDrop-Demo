@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <GridView
+            android:id="@+id/dir_grid"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/folder_bg"
+            android:columnWidth="28dp"
+            android:descendantFocusability="blocksDescendants"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:horizontalSpacing="4dp"
+            android:numColumns="2"
+            android:scrollbars="none"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="4dp" />
+
+        <View
+            android:id="@+id/trigger_to_dir"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/dir_label"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:gravity="center_horizontal"
+        android:lines="2"
+        android:maxLines="2"
+        android:text="@string/grid_item_folder_unnamed"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>

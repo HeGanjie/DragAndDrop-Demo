@@ -1,0 +1,11 @@
+<resources>
+    <item type="id" name="view_holder1" />
+    <item type="id" name="view_holder2" />
+    <item type="id" name="view_holder3" />
+    <item type="id" name="pos_extra" />
+    
+    <string name="app_name">DragAndDrop</string>
+    <string name="grid_item_label_loading">loading…\nPlease wait!</string>
+    <string name="grid_item_folder_unnamed">未命名</string>
+
+</resources>
