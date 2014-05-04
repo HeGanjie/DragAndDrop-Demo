@@ -15,8 +15,9 @@ public class DesktopPageAdapter extends PagerAdapter {
 	
 	public DesktopPageAdapter(DesktopActivity act) {
 		activity = act;
-		for (List<DesktopItem> items : CommonUtils.partitionAll(DesktopActivity.PAGE_SIZE, activity.loadDesktopItems())) {
+		for (List<DesktopItem> items : CommonUtils.partitionAll(act.pageSize, activity.loadDesktopItems())) {
 			GridView inflate = (GridView) act.getLayoutInflater().inflate(R.layout.desktop_page, null);
+			inflate.setEnabled(false); // disable GridView scrolling 
 			inflate.setAdapter(new GridAdapter(act, items));
 			pages.add(inflate);
 		}

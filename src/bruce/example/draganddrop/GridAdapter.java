@@ -196,29 +196,21 @@ public final class GridAdapter extends BaseAdapter {
 
 	public void dragTo(View v) {
 		int itemPos = (Integer) v.getTag(R.id.pos_extra);
-		if (itemPos == draggingItemPos) return; // same item
-		int itemViewType = getItemViewType(itemPos);
-		
+		if (itemPos == draggingItemPos)
+			return; // same item
 		items = new ArrayList<DesktopItem>(itemsBak); // recovery first
 		draggingItemPos = draggingItemPosBak;
-		switch (itemViewType) {
-		case VIEW_TYPE_SLOT:
-			Log.i("DragEvent", "DROP TO SLOT");
+		
+		switch (v.getId()) {
+		case R.id.slot_view:
 			dragToSlot(itemPos);
 			break;
-		case VIEW_TYPE_ITEM:
-			Log.i("DragEvent", "DROP TO ITEM");
-			if (v instanceof ImageView)
-				dragForMove(itemPos);
-			else
-				dragForFold(itemPos);
+		case R.id.app_icon:
+		case R.id.dir_grid:
+			dragForMove(itemPos);
 			break;
-		case VIEW_TYPE_FOLDER:
-			Log.i("DragEvent", "DROP TO FOLDER");
-			if (v instanceof GridView)
-				dragForMove(itemPos);
-			else
-				dragForFold(itemPos);
+		case R.id.trigger_to_dir:
+			dragForFold(itemPos);
 			break;
 		default:
 			break;
@@ -272,6 +264,7 @@ public final class GridAdapter extends BaseAdapter {
 
 	@Override
 	public boolean isEnabled(int pos) {
+		// items in folder and slot are disabled
 		return startDragListener != null && getItem(pos) != DesktopItem.SLOT;
 	}
 }

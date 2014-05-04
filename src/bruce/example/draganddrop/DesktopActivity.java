@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -21,7 +22,7 @@ import bruce.example.draganddrop.state.desktop.Idle;
 
 public class DesktopActivity extends Activity {
 	private static final String APP_SEQUENCES = "appSequences";
-	static final int PAGE_SIZE = 20;
+	public int pageSize;
 	public DesktopState state;
 	private ViewPager desktopPager;
 	public DesktopPageAdapter pagerAdapter;
@@ -42,8 +43,31 @@ public class DesktopActivity extends Activity {
 		state = new Idle(this);
 		dragEventListener = new IconDragEventListener(this);
 		desktopPager = new ViewPager(this);
-		desktopPager.setAdapter(pagerAdapter = new DesktopPageAdapter(this));
 		setContentView(desktopPager);
+		desktopPager.post(new Runnable() {
+			@Override
+			public void run() {
+				pageSize = getPageSize();
+				if (pageSize <= 0)
+					pageSize = 20;
+				Log.d("DemoDebug", "PageSize:" + pageSize);
+				desktopPager.setAdapter(pagerAdapter = new DesktopPageAdapter(DesktopActivity.this));
+			}
+		});
+	}
+	
+	private int getPageSize() {
+		float itemWidth = Utils.dp2Px(60, this);
+		float itemHeight = Utils.dp2Px(95, this);
+		float horizontalSpacing = Utils.dp2Px(30, this);
+		float verticalSpacing = Utils.dp2Px(20, this);
+		View decorView = getWindow().getDecorView();
+		int activityWidth = decorView.getWidth();
+		int activityHeight = decorView.getHeight();
+
+		int columnCount = (int) Math.floor(activityWidth / (itemWidth + horizontalSpacing));
+		int rowCount = (int) Math.floor(activityHeight / (itemHeight + verticalSpacing));
+		return columnCount * rowCount;
 	}
 
 	public List<DesktopItem> loadDesktopItems() {
@@ -56,7 +80,7 @@ public class DesktopActivity extends Activity {
 			}
 		});
 		if (CommonUtils.isStringNullOrWriteSpace(appSequences)) {
-			while (items.size() % PAGE_SIZE != 0) {
+			while (items.size() % pageSize != 0) {
 				items.add(DesktopItem.SLOT);
 			}
 			return items;

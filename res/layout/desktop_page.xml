@@ -8,4 +8,5 @@
     android:horizontalSpacing="30dp"
     android:numColumns="auto_fit"
     android:stretchMode="columnWidth"
-    android:verticalSpacing="20dp" />
+    android:verticalSpacing="20dp"
+    android:scrollbars="none" />
