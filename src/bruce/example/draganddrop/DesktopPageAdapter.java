@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.support.v4.view.PagerAdapter;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.GridView;
 import bruce.common.utils.CommonUtils;
@@ -15,9 +17,15 @@ public class DesktopPageAdapter extends PagerAdapter {
 	
 	public DesktopPageAdapter(DesktopActivity act) {
 		activity = act;
+		OnTouchListener tl = new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				return event.getAction() == MotionEvent.ACTION_MOVE;
+			}
+		};
 		for (List<DesktopItem> items : CommonUtils.partitionAll(act.pageSize, activity.loadDesktopItems())) {
 			GridView inflate = (GridView) act.getLayoutInflater().inflate(R.layout.desktop_page, null);
-			inflate.setEnabled(false); // disable GridView scrolling 
+			inflate.setOnTouchListener(tl); // disable GridView scrolling
 			inflate.setAdapter(new GridAdapter(act, items));
 			pages.add(inflate);
 		}

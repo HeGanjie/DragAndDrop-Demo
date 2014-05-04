@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -89,7 +88,7 @@ public final class GridAdapter extends BaseAdapter {
 			convertView = li.inflate(R.layout.grid_item_app, null);
 			convertView.setTag(R.id.view_holder1, imageView = (ImageView) convertView.findViewById(R.id.app_icon));
 			convertView.setTag(R.id.view_holder2, textView = (TextView) convertView.findViewById(R.id.app_label));
-			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_dir));
+			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_folder));
 			imageView.setOnLongClickListener(startDragListener);
 			imageView.setOnDragListener(dragEventListener);
 			triggerView.setOnDragListener(dragEventListener);
@@ -115,9 +114,9 @@ public final class GridAdapter extends BaseAdapter {
 		View triggerView;
 		if (convertView == null) {
 			convertView = li.inflate(R.layout.grid_item_dir, null);
-			convertView.setTag(R.id.view_holder1, gridView = (GridView) convertView.findViewById(R.id.dir_grid));
-			convertView.setTag(R.id.view_holder2, textView = (TextView) convertView.findViewById(R.id.dir_label));
-			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_dir));
+			convertView.setTag(R.id.view_holder1, gridView = (GridView) convertView.findViewById(R.id.folder_grid));
+			convertView.setTag(R.id.view_holder2, textView = (TextView) convertView.findViewById(R.id.folder_label));
+			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_folder));
 			gridView.setOnLongClickListener(startDragListener);
 			gridView.setOnDragListener(dragEventListener);
 			triggerView.setOnDragListener(dragEventListener);
@@ -206,10 +205,10 @@ public final class GridAdapter extends BaseAdapter {
 			dragToSlot(itemPos);
 			break;
 		case R.id.app_icon:
-		case R.id.dir_grid:
+		case R.id.folder_grid:
 			dragForMove(itemPos);
 			break;
-		case R.id.trigger_to_dir:
+		case R.id.trigger_to_folder:
 			dragForFold(itemPos);
 			break;
 		default:

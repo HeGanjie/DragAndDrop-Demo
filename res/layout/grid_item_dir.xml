@@ -10,14 +10,12 @@
         android:layout_height="wrap_content" >
 
         <GridView
-            android:id="@+id/dir_grid"
+            android:id="@+id/folder_grid"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:background="@drawable/folder_bg"
             android:columnWidth="28dp"
             android:descendantFocusability="blocksDescendants"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:gravity="center"
             android:horizontalSpacing="4dp"
             android:numColumns="2"
@@ -26,14 +24,14 @@
             android:verticalSpacing="4dp" />
 
         <View
-            android:id="@+id/trigger_to_dir"
+            android:id="@+id/trigger_to_folder"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_gravity="center" />
     </FrameLayout>
 
     <TextView
-        android:id="@+id/dir_label"
+        android:id="@+id/folder_label"
         android:layout_width="wrap_content"
         android:layout_height="35dp"
         android:gravity="center_horizontal"
