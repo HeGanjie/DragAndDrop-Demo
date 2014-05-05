@@ -1,5 +1,6 @@
 package bruce.example.draganddrop;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +11,7 @@ import bruce.common.functional.Func1;
 import bruce.common.functional.LambdaUtils;
 import bruce.common.utils.CommonUtils;
 
-public class DesktopItem {
+public final class DesktopItem {
 	private static final String PKG_NAME_SLOT = "slot";
 	static final Func1<String, DesktopItem> pkgNameSelector = new Func1<String, DesktopItem>() {
 		@Override
@@ -50,11 +51,15 @@ public class DesktopItem {
 	public String toString() {
 		if (this == SLOT) {
 			return PKG_NAME_SLOT;
-		} else if (folderItems == null) {
+		} else if (isItem()) {
 			return pkgName;
 		} else {
 			return CommonUtils.buildString(pkgName, ';', pkgName);
 		}
+	}
+
+	public boolean isItem() {
+		return folderItems == null;
 	}
 
 	public DesktopItem hide() {
@@ -81,6 +86,22 @@ public class DesktopItem {
 				@Override
 				public Boolean call(DesktopItem t) { return t != DesktopItem.SLOT; }
 			}));
+		}
+	}
+
+	public DesktopItem merge(String defaultFolderName, DesktopItem mergingItem) {
+		if (!isItem() && !mergingItem.isItem()) { // folder + folder
+			List<DesktopItem> itemList = new ArrayList<DesktopItem>(folderItems);
+			itemList.addAll(mergingItem.folderItems);
+			return new DesktopItem(defaultFolderName, itemList);
+		} else if (!isItem() && mergingItem.isItem()) { // item + folder | folder + item
+			List<DesktopItem> itemList = new ArrayList<DesktopItem>(folderItems);
+			itemList.add(mergingItem);
+			return new DesktopItem(defaultFolderName, itemList);
+		} else if (isItem() && !mergingItem.isItem()) {
+			return mergingItem.merge(defaultFolderName, this);
+		} else { // item + item
+			return new DesktopItem(defaultFolderName, Arrays.asList(this, mergingItem));
 		}
 	}
 }

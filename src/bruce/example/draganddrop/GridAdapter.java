@@ -1,7 +1,6 @@
 package bruce.example.draganddrop;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -109,7 +108,7 @@ public final class GridAdapter extends BaseAdapter {
 	}
 
 	private View getFolderView(int pos, View convertView) {
-		GridView gridView;
+		final GridView gridView;
 		TextView textView;
 		View triggerView;
 		if (convertView == null) {
@@ -118,6 +117,10 @@ public final class GridAdapter extends BaseAdapter {
 			convertView.setTag(R.id.view_holder2, textView = (TextView) convertView.findViewById(R.id.folder_label));
 			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_folder));
 			gridView.setOnLongClickListener(startDragListener);
+			convertView.findViewById(R.id.folder_clickable).setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) { return gridView.performLongClick(); }
+			});
 			gridView.setOnDragListener(dragEventListener);
 			triggerView.setOnDragListener(dragEventListener);
 		} else {
@@ -182,14 +185,8 @@ public final class GridAdapter extends BaseAdapter {
 		draggingItemPos = -1;
 		
 		DesktopItem targetItem = getItem(targetPos);
-		String defaultName = li.getContext().getString(R.string.grid_item_folder_unnamed);
-		if (targetItem.folderItems == null) {
-			items.set(targetPos, new DesktopItem(defaultName, Arrays.asList(targetItem, draggingItem)));
-		} else {
-			List<DesktopItem> apps = new ArrayList<DesktopItem>(targetItem.folderItems);
-			apps.add(draggingItem);
-			items.set(targetPos, new DesktopItem(defaultName, apps));
-		}
+		String defaultFolderName = li.getContext().getString(R.string.grid_item_folder_unnamed);
+		items.set(targetPos, targetItem.merge(defaultFolderName, draggingItem));
 		notifyDataSetChanged();
 	}
 

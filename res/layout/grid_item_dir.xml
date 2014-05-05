@@ -23,6 +23,14 @@
             android:stretchMode="columnWidth"
             android:verticalSpacing="4dp" />
 
+        <TextView
+            android:id="@+id/folder_clickable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:width="60dp"
+            android:height="60dp" />
+
         <View
             android:id="@+id/trigger_to_folder"
             android:layout_width="20dp"
