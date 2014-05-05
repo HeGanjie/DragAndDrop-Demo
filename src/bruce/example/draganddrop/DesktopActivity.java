@@ -24,7 +24,7 @@ public class DesktopActivity extends Activity {
 	private static final String APP_SEQUENCES = "appSequences";
 	public int pageSize;
 	public DesktopState state;
-	private ViewPager desktopPager;
+	public ViewPager desktopPager;
 	public DesktopPageAdapter pagerAdapter;
 	public IconDragEventListener dragEventListener;
 	public final OnLongClickListener startDragListener = new OnLongClickListener() {
@@ -111,9 +111,5 @@ public class DesktopActivity extends Activity {
 	private List<ResolveInfo> getAppInfos() {
 		final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
 		return getPackageManager().queryIntentActivities(mainIntent, 0);
-	}
-
-	public int getCurrentPageIndex() {
-		return desktopPager.getCurrentItem();
 	}
 }

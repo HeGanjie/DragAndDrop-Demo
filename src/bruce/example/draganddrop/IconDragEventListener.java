@@ -24,18 +24,22 @@ public class IconDragEventListener implements OnDragListener {
 			return true;
 		case DragEvent.ACTION_DRAG_LOCATION:
 			int tag = (Integer) v.getTag();
-			if (tag < 25) {
+			if (tag < 25)
 				v.setTag(tag + 1);
-			} else {
+			else {
 				v.setTag(0);
-				activity.pagerAdapter.dragTo(v);
+				if (v.getId() != R.id.switch_left_listener && v.getId() != R.id.switch_right_listener)
+					activity.pagerAdapter.dragTo(v);
+				else
+					activity.pagerAdapter.switchPage((Integer) v.getTag(R.id.pos_extra));
 			}
 			return true;
 		case DragEvent.ACTION_DRAG_EXITED:
 			v.setTag(0);
 			return true;
 		case DragEvent.ACTION_DROP:
-			activity.pagerAdapter.dragTo(v);
+			if (v.getId() != R.id.switch_left_listener && v.getId() != R.id.switch_right_listener)
+				activity.pagerAdapter.dragTo(v);
 			return true;
 		case DragEvent.ACTION_DRAG_ENDED:
 			if (!(activity.state instanceof Editing)) {

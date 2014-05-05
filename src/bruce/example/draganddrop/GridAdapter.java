@@ -140,8 +140,8 @@ public final class GridAdapter extends BaseAdapter {
 	}
 
 	public void startDrag(int pos) {
-		itemsBak = Collections.unmodifiableList(items);
-		draggingItemPosBak = draggingItemPos = pos;
+		bakup(pos);
+		draggingItemPos = pos;
 		items.set(pos, getItem(pos).hide()); // hide dragging item
 		notifyDataSetChanged();
 	}
@@ -149,8 +149,8 @@ public final class GridAdapter extends BaseAdapter {
 	public void endDrag() {
 		if (draggingItemPos != -1) // item not in folder
 			items.set(draggingItemPos, items.get(draggingItemPos).show());
-		itemsBak = null;
-		draggingItemPosBak = draggingItemPos = -1;
+		draggingItemPos = -1;
+		cleanBackup();
 		notifyDataSetChanged();
 	}
 
@@ -190,12 +190,38 @@ public final class GridAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 
+	public DesktopItem dragOut(int pos) {
+		DesktopItem draggingItem = items.set(draggingItemPos, DesktopItem.SLOT);
+		draggingItemPos = -1;
+		return draggingItem;
+	}
+	
+	public void dragIn(DesktopItem draggingItem, View targetView) {
+		if (!hasBackup()) bakup(-1);
+		// TODO
+		switch (targetView.getId()) {
+		case R.id.slot_view:
+			break;
+		case R.id.app_icon:
+		case R.id.folder_grid:
+			break;
+		case R.id.trigger_to_folder:
+			break;
+		default:
+			break;
+		}
+	}
+	
+	public void dragTo(GridAdapter targetAdapter, View targetView) {
+		DesktopItem draggingItem = dragOut(draggingItemPos);
+		targetAdapter.dragIn(draggingItem, targetView);
+	}
+
 	public void dragTo(View v) {
 		int itemPos = (Integer) v.getTag(R.id.pos_extra);
 		if (itemPos == draggingItemPos)
 			return; // same item
-		items = new ArrayList<DesktopItem>(itemsBak); // recovery first
-		draggingItemPos = draggingItemPosBak;
+		recovery();
 		
 		switch (v.getId()) {
 		case R.id.slot_view:
@@ -231,6 +257,25 @@ public final class GridAdapter extends BaseAdapter {
 			return forthSlotIndex - offset <= offset - backSlotIndex ? forthSlotIndex : backSlotIndex;
 		} else
 			return backSlotIndex == -1 ? forthSlotIndex : backSlotIndex;
+	}
+
+	private void bakup(int pos) {
+		if (hasBackup())
+			throw new IllegalStateException();
+		itemsBak = Collections.unmodifiableList(items);
+		draggingItemPosBak = pos;
+	}
+
+	private boolean hasBackup() { return itemsBak != null; }
+
+	private void cleanBackup() {
+		itemsBak = null;
+		draggingItemPosBak = -1;
+	}
+
+	private void recovery() {
+		items = new ArrayList<DesktopItem>(itemsBak); // recovery first
+		draggingItemPos = draggingItemPosBak;
 	}
 
 	@Override
