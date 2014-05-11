@@ -1,14 +1,13 @@
 package bruce.example.draganddrop;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import android.graphics.drawable.Drawable;
 import bruce.common.functional.Func1;
 import bruce.common.functional.LambdaUtils;
+import bruce.common.functional.PersistentVector;
 import bruce.common.utils.CommonUtils;
 
 public final class DesktopItem {
@@ -20,7 +19,7 @@ public final class DesktopItem {
 	public static final DesktopItem SLOT = new DesktopItem(null, null, PKG_NAME_SLOT, null, true);
 	final Drawable icon;
 	final String label, pkgName;
-	final List<DesktopItem> folderItems;
+	final PersistentVector<DesktopItem> folderItems;
 	final boolean visible;
 	
 	public DesktopItem(Drawable drawable, String appName, String packageName) {
@@ -31,15 +30,15 @@ public final class DesktopItem {
 		visible = true;
 	}
 	
-	public DesktopItem(String folderName, List<DesktopItem> foldedItems) {
+	public DesktopItem(String folderName, PersistentVector<DesktopItem> foldedItems) {
 		icon = null;
 		label = folderName;
 		pkgName = CommonUtils.displayArray(LambdaUtils.select(foldedItems, pkgNameSelector).toArray(), ";");
-		folderItems = Collections.unmodifiableList(foldedItems);
+		folderItems = foldedItems;
 		visible = true;
 	}
 	
-	private DesktopItem(Drawable ic, String name, String pkg, List<DesktopItem> innerItems, boolean isVisible) {
+	private DesktopItem(Drawable ic, String name, String pkg, PersistentVector<DesktopItem> innerItems, boolean isVisible) {
 		icon = ic;
 		label = name;
 		pkgName = pkg;
@@ -82,26 +81,22 @@ public final class DesktopItem {
 				@Override
 				public DesktopItem call(String t) { return fromPkgName(map, t); }
 			});
-			return new DesktopItem(pkgNames.get(0), LambdaUtils.where(select, new Func1<Boolean, DesktopItem>() {
+			return new DesktopItem(pkgNames.get(0), new PersistentVector<DesktopItem>(LambdaUtils.where(select, new Func1<Boolean, DesktopItem>() {
 				@Override
 				public Boolean call(DesktopItem t) { return t != DesktopItem.SLOT; }
-			}));
+			})));
 		}
 	}
 
 	public DesktopItem merge(String defaultFolderName, DesktopItem mergingItem) {
 		if (!isItem() && !mergingItem.isItem()) { // folder + folder
-			List<DesktopItem> itemList = new ArrayList<DesktopItem>(folderItems);
-			itemList.addAll(mergingItem.folderItems);
-			return new DesktopItem(defaultFolderName, itemList);
+			return new DesktopItem(defaultFolderName, folderItems.merge(mergingItem.folderItems));
 		} else if (!isItem() && mergingItem.isItem()) { // item + folder | folder + item
-			List<DesktopItem> itemList = new ArrayList<DesktopItem>(folderItems);
-			itemList.add(mergingItem);
-			return new DesktopItem(defaultFolderName, itemList);
+			return new DesktopItem(defaultFolderName, folderItems.conj(mergingItem));
 		} else if (isItem() && !mergingItem.isItem()) {
 			return mergingItem.merge(defaultFolderName, this);
 		} else { // item + item
-			return new DesktopItem(defaultFolderName, Arrays.asList(this, mergingItem));
+			return new DesktopItem(defaultFolderName, new PersistentVector<DesktopItem>(this, mergingItem));
 		}
 	}
 }

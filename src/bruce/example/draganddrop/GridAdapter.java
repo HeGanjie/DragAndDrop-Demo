@@ -1,9 +1,5 @@
 package bruce.example.draganddrop;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import bruce.common.functional.PersistentVector;
 
 public final class GridAdapter extends BaseAdapter {
 	private static final int VIEW_TYPE_SLOT = 0;
@@ -22,19 +19,23 @@ public final class GridAdapter extends BaseAdapter {
 	private final IconDragEventListener dragEventListener;
 	private final OnLongClickListener startDragListener;
 	
-	private List<DesktopItem> itemsBak;
-	private List<DesktopItem> items;
-	private int draggingItemPosBak = -1;
-	private int draggingItemPos = -1;
+	private PersistentVector<DesktopItem> items;
 	
-	public GridAdapter(DesktopActivity ctx, List<DesktopItem> displayItems) {
+	public PersistentVector<DesktopItem> getItems() { return items; }
+	
+	public void updateItems(PersistentVector<DesktopItem> newItems) {
+		items = newItems;
+		notifyDataSetChanged();
+	}
+	
+	public GridAdapter(DesktopActivity ctx, PersistentVector<DesktopItem> persistentVector) {
 		startDragListener = ctx.startDragListener;
 		dragEventListener = ctx.dragEventListener;
 		li = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		items = displayItems;
+		items = persistentVector;
 	}
 
-	public GridAdapter(LayoutInflater inflater, List<DesktopItem> folderItems) {
+	public GridAdapter(LayoutInflater inflater, PersistentVector<DesktopItem> folderItems) {
 		startDragListener = null;
 		dragEventListener = null;
 		li = inflater;
@@ -137,145 +138,6 @@ public final class GridAdapter extends BaseAdapter {
 		convertView.setVisibility(displayItem.visible ? View.VISIBLE : View.INVISIBLE);
 		
 		return convertView;
-	}
-
-	public void startDrag(int pos) {
-		bakup(pos);
-		draggingItemPos = pos;
-		items.set(pos, getItem(pos).hide()); // hide dragging item
-		notifyDataSetChanged();
-	}
-
-	public void endDrag() {
-		if (draggingItemPos != -1) // item not in folder
-			items.set(draggingItemPos, items.get(draggingItemPos).show());
-		draggingItemPos = -1;
-		cleanBackup();
-		notifyDataSetChanged();
-	}
-
-	public void dragToSlot(int targetPos) {
-		Collections.swap(items, draggingItemPos, targetPos);
-		draggingItemPos = targetPos;
-		notifyDataSetChanged();
-	}
-	
-	public void dragForMove(int targetPos) {
-		DesktopItem draggingItem = items.get(draggingItemPos);
-		items.set(draggingItemPos, DesktopItem.SLOT); // move out
-		
-		DesktopItem targetItem = items.get(targetPos);
-		items.set(targetPos, draggingItem); // move in
-		draggingItemPos = targetPos;
-		
-		int nearestSlotPos = getNearestSlotPos(targetPos);
-		if (nearestSlotPos < targetPos) { // target item place left
-			items.add(targetPos, targetItem);
-			items.remove(nearestSlotPos);
-		} else { // target item place right
-			items.remove(nearestSlotPos);
-			items.add(targetPos + 1, targetItem);
-		}
-		notifyDataSetChanged();
-	}
-
-	public void dragForFold(int targetPos) {
-		DesktopItem draggingItem = items.get(draggingItemPos);
-		items.set(draggingItemPos, DesktopItem.SLOT);
-		draggingItemPos = -1;
-		
-		DesktopItem targetItem = getItem(targetPos);
-		String defaultFolderName = li.getContext().getString(R.string.grid_item_folder_unnamed);
-		items.set(targetPos, targetItem.merge(defaultFolderName, draggingItem));
-		notifyDataSetChanged();
-	}
-
-	public DesktopItem dragOut(int pos) {
-		DesktopItem draggingItem = items.set(draggingItemPos, DesktopItem.SLOT);
-		draggingItemPos = -1;
-		return draggingItem;
-	}
-	
-	public void dragIn(DesktopItem draggingItem, View targetView) {
-		if (!hasBackup()) bakup(-1);
-		// TODO
-		switch (targetView.getId()) {
-		case R.id.slot_view:
-			break;
-		case R.id.app_icon:
-		case R.id.folder_grid:
-			break;
-		case R.id.trigger_to_folder:
-			break;
-		default:
-			break;
-		}
-	}
-	
-	public void dragTo(GridAdapter targetAdapter, View targetView) {
-		DesktopItem draggingItem = dragOut(draggingItemPos);
-		targetAdapter.dragIn(draggingItem, targetView);
-	}
-
-	public void dragTo(View v) {
-		int itemPos = (Integer) v.getTag(R.id.pos_extra);
-		if (itemPos == draggingItemPos)
-			return; // same item
-		recovery();
-		
-		switch (v.getId()) {
-		case R.id.slot_view:
-			dragToSlot(itemPos);
-			break;
-		case R.id.app_icon:
-		case R.id.folder_grid:
-			dragForMove(itemPos);
-			break;
-		case R.id.trigger_to_folder:
-			dragForFold(itemPos);
-			break;
-		default:
-			break;
-		}
-	}
-
-	private int getNearestSlotPos(int offset) {
-		int forthSlotIndex = -1, backSlotIndex = -1;
-		for (int i = offset + 1; i < items.size(); i++) {
-			if (items.get(i) == DesktopItem.SLOT) {
-				forthSlotIndex = i;
-				break;
-			}
-		}
-		for (int i = offset - 1; 0 <= i; i--) {
-			if (items.get(i) == DesktopItem.SLOT) {
-				backSlotIndex = i;
-				break;
-			}
-		}
-		if (forthSlotIndex != -1 && backSlotIndex != -1) {
-			return forthSlotIndex - offset <= offset - backSlotIndex ? forthSlotIndex : backSlotIndex;
-		} else
-			return backSlotIndex == -1 ? forthSlotIndex : backSlotIndex;
-	}
-
-	private void bakup(int pos) {
-		if (hasBackup())
-			throw new IllegalStateException();
-		itemsBak = Collections.unmodifiableList(items);
-		draggingItemPosBak = pos;
-	}
-
-	private boolean hasBackup() { return itemsBak != null; }
-
-	private void cleanBackup() {
-		itemsBak = null;
-		draggingItemPosBak = -1;
-	}
-
-	private void recovery() {
-		items = new ArrayList<DesktopItem>(itemsBak); // recovery first
-		draggingItemPos = draggingItemPosBak;
 	}
 
 	@Override
