@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.support.v4.view.PagerAdapter;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -72,46 +71,50 @@ public class DesktopPageAdapter extends PagerAdapter {
 		return (GridAdapter) iconView.getAdapter();
 	}
 
-	private int startDragAtPageIndex = -1, draggingItemPos = -1, modifiedPageIndex = -1, draggingToPos = -1;
+	private int dragOutPageIndex = -1, draggingOutPos = -1, dragInPageIndex = -1, draggingToPos = -1;
+	private boolean isToDir = false;
 	
 	public void startDrag(int pos) {
-		startDragAtPageIndex = getDesktopPageIndex();
-		draggingItemPos = pos;
-		modifiedPageIndex = -1;
+		dragOutPageIndex = getDesktopPageIndex();
+		draggingOutPos = pos;
+		dragInPageIndex = -1;
 		draggingToPos = -1;
-		setPageItems(startDragAtPageIndex, pageItems.get(startDragAtPageIndex).assoc(draggingItemPos, DesktopItem.SLOT));
+		isToDir = false;
+		setPageItems(dragOutPageIndex, pageItems.get(dragOutPageIndex).assoc(draggingOutPos, DesktopItem.SLOT));
 	}
 
 	public void dragTo(View v) {
-		resetToDragStarted();
-		int draggingToPageIndex = getDesktopPageIndex();
+		int currentPageIndex = getDesktopPageIndex();
 		int pos = (Integer) v.getTag(R.id.pos_extra);
-		if (draggingToPageIndex == startDragAtPageIndex && pos == draggingItemPos) { // same item
+		if (currentPageIndex == dragOutPageIndex && pos == draggingOutPos) { // same item
+			return;
+		} else if (currentPageIndex == dragInPageIndex && pos == draggingToPos) { // already apply
 			return;
 		}
-		PersistentVector<DesktopItem> itemsOfTargetPage = getAdapterByIndex(draggingToPageIndex).getItems();
+		resetToDragStarted();
+		dragInPageIndex = currentPageIndex;
+		draggingToPos = pos;
+		PersistentVector<DesktopItem> itemsOfTargetPage = getAdapterByIndex(dragInPageIndex).getItems();
 		switch (v.getId()) {
 		case R.id.slot_view:
-			setPageItems(draggingToPageIndex, itemsOfTargetPage.assoc(pos, DesktopItem.SLOT)); // keep dragging view as a SLOT until ending drag
-			modifiedPageIndex = draggingToPageIndex;
-			draggingToPos = pos;
+			setPageItems(dragInPageIndex, itemsOfTargetPage.assoc(draggingToPos, DesktopItem.SLOT)); // keep dragging view as a SLOT until ending drag
 			break;
 		case R.id.app_icon:
 		case R.id.folder_grid:
-			int nearestSlotPos = getNearestSlotPos(pos, itemsOfTargetPage);
-			if (nearestSlotPos == -1)
+			int nearestSlotPos = getNearestSlotPos(draggingToPos, itemsOfTargetPage);
+			if (nearestSlotPos == -1) {
 				Toast.makeText(activity, "This page is full", Toast.LENGTH_SHORT).show();
-			else {
-				setPageItems(draggingToPageIndex, itemsOfTargetPage.disjAt(nearestSlotPos).conj(pos, DesktopItem.SLOT));
-				modifiedPageIndex = draggingToPageIndex;
-			draggingToPos = pos;
+				dragInPageIndex = -1;
+				draggingToPos = -1;
+			} else { // [_ 1 x 3 4] -> [1 x n 3 4] | [0 1 x 3 _] -> [0 1 n x 3]
+				setPageItems(dragInPageIndex, itemsOfTargetPage.disjAt(nearestSlotPos).conj(draggingToPos, DesktopItem.SLOT));
 			}
 			break;
 		case R.id.trigger_to_folder:
 			String defaultFolderName = activity.getString(R.string.grid_item_folder_unnamed);
-			setPageItems(draggingToPageIndex, itemsOfTargetPage.assoc(pos, itemsOfTargetPage.get(pos).merge(defaultFolderName, getDraggingItem())));
-			modifiedPageIndex = draggingToPageIndex;
-			draggingToPos = pos;
+			DesktopItem folder = itemsOfTargetPage.get(draggingToPos).merge(defaultFolderName, getDraggingItem());
+			setPageItems(dragInPageIndex, itemsOfTargetPage.assoc(draggingToPos, folder));
+			isToDir = true;
 			break;
 		default:
 			break;
@@ -119,38 +122,43 @@ public class DesktopPageAdapter extends PagerAdapter {
 	}
 
 	private void resetToDragStarted() {
-		if (modifiedPageIndex == -1) {
-			return;
-		} else if (modifiedPageIndex == startDragAtPageIndex) {
-			setPageItems(startDragAtPageIndex, pageItems.get(startDragAtPageIndex).assoc(draggingItemPos, DesktopItem.SLOT));
-			modifiedPageIndex = -1;
-		} else {
-			setPageItems(modifiedPageIndex, pageItems.get(modifiedPageIndex));
-			modifiedPageIndex = -1;
+		if (dragInPageIndex != -1) {
+			if (dragInPageIndex == dragOutPageIndex) {
+				setPageItems(dragOutPageIndex, pageItems.get(dragOutPageIndex).assoc(draggingOutPos, DesktopItem.SLOT));
+			} else {
+				setPageItems(dragInPageIndex, pageItems.get(dragInPageIndex));
+			}
 		}
+		dragInPageIndex = -1;
+		draggingToPos = -1;
+		isToDir = false;
 	}
 
 	public void endDrag() {
-		if (modifiedPageIndex == -1) { // reset to before drag
-			setPageItems(startDragAtPageIndex, pageItems.get(startDragAtPageIndex));
-		} else if (modifiedPageIndex == startDragAtPageIndex) { // settle dragging view
-			PersistentVector<DesktopItem> updated = getAdapterByIndex(modifiedPageIndex).getItems().assoc(draggingToPos, getDraggingItem());
-			setPageItems(modifiedPageIndex, updated);
-			pageItems = pageItems.assoc(startDragAtPageIndex, updated);
+		if (dragInPageIndex == -1) { // reset to before drag
+			setPageItems(dragOutPageIndex, pageItems.get(dragOutPageIndex));
+		} else if (dragInPageIndex == dragOutPageIndex) { // settle dragging view
+			pageItems = isToDir
+					? pageItems.assoc(dragOutPageIndex, getAdapterByIndex(dragOutPageIndex).getItems())
+					: pageItems.assoc(dragOutPageIndex, getAdapterByIndex(dragOutPageIndex).getItems().assoc(draggingToPos, getDraggingItem()));
+			setPageItems(dragInPageIndex, pageItems.get(dragOutPageIndex));
 		} else {
-			PersistentVector<DesktopItem> updated = getAdapterByIndex(modifiedPageIndex).getItems().assoc(draggingToPos, getDraggingItem());
-			setPageItems(modifiedPageIndex, updated);
+			PersistentVector<DesktopItem> newModifiedPageItems = isToDir
+					? getAdapterByIndex(dragInPageIndex).getItems()
+					:  getAdapterByIndex(dragInPageIndex).getItems().assoc(draggingToPos, getDraggingItem());
 			pageItems = pageItems
-					.assoc(startDragAtPageIndex, getAdapterByIndex(startDragAtPageIndex).getItems())
-					.assoc(modifiedPageIndex, updated);
+					.assoc(dragOutPageIndex, getAdapterByIndex(dragOutPageIndex).getItems())
+					.assoc(dragInPageIndex, newModifiedPageItems);
+			setPageItems(dragInPageIndex, pageItems.get(dragInPageIndex));
 		}
-		startDragAtPageIndex = -1;
-		draggingItemPos = -1;
-		modifiedPageIndex = -1;
+		dragOutPageIndex = -1;
+		draggingOutPos = -1;
+		dragInPageIndex = -1;
 		draggingToPos = -1;
+		isToDir = false;
 	}
 
-	private DesktopItem getDraggingItem() { return pageItems.get(startDragAtPageIndex).get(draggingItemPos); }
+	private DesktopItem getDraggingItem() { return pageItems.get(dragOutPageIndex).get(draggingOutPos); }
 
 	private void setPageItems(int pageIndex, PersistentVector<DesktopItem> items) {
 		getAdapterByIndex(pageIndex).updateItems(items);
@@ -177,7 +185,6 @@ public class DesktopPageAdapter extends PagerAdapter {
 	}
 	
 	public void switchPage(int index) {
-		Log.d("DragEvent", "switchPage: " + index);
 		if (0 <= index && index < pageViews.size()) {
 			activity.desktopPager.setCurrentItem(index);
 		}
