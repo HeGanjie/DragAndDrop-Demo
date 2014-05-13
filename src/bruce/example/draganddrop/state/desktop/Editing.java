@@ -3,7 +3,6 @@ package bruce.example.draganddrop.state.desktop;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
 import bruce.example.draganddrop.DesktopActivity;
-import bruce.example.draganddrop.R;
 
 public class Editing extends DesktopState {
 
@@ -26,7 +25,8 @@ public class Editing extends DesktopState {
 	public void dragging(View v) {
 		_activity.state = new Dragging(_activity);
 		v.startDrag(null, new DragShadowBuilder(v), null, 0);
-		_activity.pagerAdapter.startDrag((Integer) v.getTag(R.id.pos_extra));
+		_activity.dragEventListener.startDrag(v);
+		//_activity.pagerAdapter.startDrag((Integer) v.getTag(R.id.pos_extra));
 	}
 
 }

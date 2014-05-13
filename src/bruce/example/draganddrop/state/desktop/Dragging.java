@@ -18,7 +18,8 @@ public class Dragging extends DesktopState {
 	@Override
 	public void editing() {
 		_activity.state = new Editing(_activity);
-		_activity.pagerAdapter.endDrag();
+		_activity.dragEventListener.endDrag();
+		//_activity.pagerAdapter.endDrag();
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package bruce.example.draganddrop;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -22,10 +22,9 @@ import bruce.example.draganddrop.state.desktop.Idle;
 
 public class DesktopActivity extends Activity {
 	private static final String APP_SEQUENCES = "appSequences";
-	public int pageSize;
+	public final int pageSize = 12;
 	public DesktopState state;
-	public ViewPager desktopPager;
-	public DesktopPageAdapter pagerAdapter;
+	public ViewPager mainPager, shortcutPager;
 	public IconDragEventListener dragEventListener;
 	public final OnLongClickListener startDragListener = new OnLongClickListener() {
 		@Override
@@ -40,20 +39,15 @@ public class DesktopActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.desktop_layout);
 		state = new Idle(this);
 		dragEventListener = new IconDragEventListener(this);
-		desktopPager = new ViewPager(this);
-		setContentView(desktopPager);
-		desktopPager.post(new Runnable() {
-			@Override
-			public void run() {
-				pageSize = getPageSize();
-				if (pageSize <= 0)
-					pageSize = 20;
-				Log.d("DemoDebug", "PageSize:" + pageSize);
-				desktopPager.setAdapter(pagerAdapter = new DesktopPageAdapter(DesktopActivity.this));
-			}
-		});
+		mainPager = (ViewPager) findViewById(R.id.main_pager);
+		mainPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, pageSize, loadDesktopItems(), "main"));
+		
+		shortcutPager = (ViewPager) findViewById(R.id.shortcut_pager);
+		List<DesktopItem> slots = Arrays.asList(DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT);
+		mainPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, 5, slots, "shortcut"));
 	}
 	
 	private int getPageSize() {
@@ -111,5 +105,18 @@ public class DesktopActivity extends Activity {
 	private List<ResolveInfo> getAppInfos() {
 		final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
 		return getPackageManager().queryIntentActivities(mainIntent, 0);
+	}
+
+	public ViewPager getViewPagerByGroupName(String groupName) {
+		if ("main".equals(groupName)) {
+			return mainPager;
+		} else if ("shortcut".equals(groupName)) {
+			return shortcutPager;
+		}
+		throw new IllegalStateException();
+	}
+	
+	public DesktopPageAdapter getPagerAdapterByItemView(View v) {
+		return (DesktopPageAdapter) getViewPagerByGroupName((String) v.getTag(R.id.group_name)).getAdapter();
 	}
 }

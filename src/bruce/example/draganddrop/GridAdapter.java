@@ -18,6 +18,8 @@ public final class GridAdapter extends BaseAdapter {
 	private final LayoutInflater li;
 	private final IconDragEventListener dragEventListener;
 	private final OnLongClickListener startDragListener;
+	private final String groupName;
+	private final int indexInGroup;
 	
 	private PersistentVector<DesktopItem> items;
 	
@@ -28,11 +30,13 @@ public final class GridAdapter extends BaseAdapter {
 		notifyDataSetChanged();
 	}
 	
-	public GridAdapter(DesktopActivity ctx, PersistentVector<DesktopItem> persistentVector) {
+	public GridAdapter(DesktopActivity ctx, PersistentVector<DesktopItem> persistentVector, String groupName, int indexInGroup) {
 		startDragListener = ctx.startDragListener;
 		dragEventListener = ctx.dragEventListener;
 		li = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		items = persistentVector;
+		this.groupName = groupName;
+		this.indexInGroup = indexInGroup;
 	}
 
 	public GridAdapter(LayoutInflater inflater, PersistentVector<DesktopItem> folderItems) {
@@ -40,8 +44,18 @@ public final class GridAdapter extends BaseAdapter {
 		dragEventListener = null;
 		li = inflater;
 		items = folderItems;
+		this.groupName = null;
+		this.indexInGroup = -1;
 	}
 	
+	private void setTags(View dragEventListenerView, int pos) {
+		dragEventListenerView.setTag(R.id.pos_extra, pos);
+		if (indexInGroup != -1) {
+			dragEventListenerView.setTag(R.id.group_name, groupName);
+			dragEventListenerView.setTag(R.id.index_in_group, indexInGroup);
+		}
+	}
+
 	@Override
 	public View getView(int pos, View convertView, ViewGroup parent) {
 		int itemViewType = getItemViewType(pos);
@@ -64,7 +78,7 @@ public final class GridAdapter extends BaseAdapter {
 			convertView = li.inflate(R.layout.grid_item_slot, null);
 			convertView.setOnDragListener(dragEventListener);
 		}
-		convertView.setTag(R.id.pos_extra, pos);
+		setTags(convertView, pos);
 		convertView.setVisibility(getItem(pos).visible ? View.VISIBLE : View.INVISIBLE);
 		return convertView;
 	}
@@ -101,8 +115,8 @@ public final class GridAdapter extends BaseAdapter {
 		DesktopItem displayItem = getItem(pos);
 		imageView.setImageDrawable(displayItem.icon);
 		textView.setText(displayItem.label);
-		imageView.setTag(R.id.pos_extra, pos);
-		triggerView.setTag(R.id.pos_extra, pos);
+		setTags(imageView, pos);
+		setTags(triggerView, pos);
 		convertView.setVisibility(displayItem.visible ? View.VISIBLE : View.INVISIBLE);
 		
 		return convertView;
@@ -133,8 +147,8 @@ public final class GridAdapter extends BaseAdapter {
 		DesktopItem displayItem = getItem(pos);
 		gridView.setAdapter(new GridAdapter(li, displayItem.folderItems));
 		textView.setText(displayItem.label);
-		gridView.setTag(R.id.pos_extra, pos);
-		triggerView.setTag(R.id.pos_extra, pos);
+		setTags(gridView, pos);
+		setTags(triggerView, pos);
 		convertView.setVisibility(displayItem.visible ? View.VISIBLE : View.INVISIBLE);
 		
 		return convertView;
