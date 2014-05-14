@@ -75,7 +75,7 @@ public final class GridAdapter extends BaseAdapter {
 
 	private View getSlotView(int pos, View convertView) {
 		if (convertView == null) {
-			convertView = li.inflate(R.layout.grid_item_slot, null);
+			convertView = li.inflate(R.layout.desktop_item_slot, null);
 			convertView.setOnDragListener(dragEventListener);
 		}
 		setTags(convertView, pos);
@@ -86,7 +86,7 @@ public final class GridAdapter extends BaseAdapter {
 	private View getTinyAppItemView(int pos, View convertView) {
 		ImageView imageView = (ImageView) convertView;
 		if (imageView == null) {
-			imageView = (ImageView) li.inflate(R.layout.grid_item_tiny_app, null);
+			imageView = (ImageView) li.inflate(R.layout.desktop_item_tiny_app, null);
 		}
 	
 		DesktopItem displayItem = getItem(pos);
@@ -99,7 +99,7 @@ public final class GridAdapter extends BaseAdapter {
 		TextView textView;
 		View triggerView;
 		if (convertView == null) {
-			convertView = li.inflate(R.layout.grid_item_app, null);
+			convertView = li.inflate(R.layout.desktop_item_app, null);
 			convertView.setTag(R.id.view_holder1, imageView = (ImageView) convertView.findViewById(R.id.app_icon));
 			convertView.setTag(R.id.view_holder2, textView = (TextView) convertView.findViewById(R.id.app_label));
 			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_folder));
@@ -127,7 +127,7 @@ public final class GridAdapter extends BaseAdapter {
 		TextView textView;
 		View triggerView;
 		if (convertView == null) {
-			convertView = li.inflate(R.layout.grid_item_dir, null);
+			convertView = li.inflate(R.layout.desktop_item_dir, null);
 			convertView.setTag(R.id.view_holder1, gridView = (GridView) convertView.findViewById(R.id.folder_grid));
 			convertView.setTag(R.id.view_holder2, textView = (TextView) convertView.findViewById(R.id.folder_label));
 			convertView.setTag(R.id.view_holder3, triggerView = convertView.findViewById(R.id.trigger_to_folder));

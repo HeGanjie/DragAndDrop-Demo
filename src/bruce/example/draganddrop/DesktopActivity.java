@@ -47,7 +47,7 @@ public class DesktopActivity extends Activity {
 		
 		shortcutPager = (ViewPager) findViewById(R.id.shortcut_pager);
 		List<DesktopItem> slots = Arrays.asList(DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT);
-		mainPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, 5, slots, "shortcut"));
+		shortcutPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, 5, slots, "shortcut"));
 	}
 	
 	private int getPageSize() {
@@ -116,7 +116,16 @@ public class DesktopActivity extends Activity {
 		throw new IllegalStateException();
 	}
 	
-	public DesktopPageAdapter getPagerAdapterByItemView(View v) {
+	public DesktopPageAdapter getPagerAdapter(View v) {
 		return (DesktopPageAdapter) getViewPagerByGroupName((String) v.getTag(R.id.group_name)).getAdapter();
+	}
+
+	public int getViewPagerLayout(String groupName) {
+		if ("main".equals(groupName)) {
+			return R.layout.desktop_page;
+		} else if ("shortcut".equals(groupName)) {
+			return R.layout.shortcut_page;
+		}
+		throw new IllegalStateException();
 	}
 }
