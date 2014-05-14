@@ -43,10 +43,10 @@ public class DesktopActivity extends Activity {
 		state = new Idle(this);
 		dragEventListener = new IconDragEventListener(this);
 		mainPager = (ViewPager) findViewById(R.id.main_pager);
-		mainPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, splitItems(pageSize, loadDesktopItems()), "main"));
+		mainPager.setAdapter(new DesktopPagerAdapter(DesktopActivity.this, splitItems(pageSize, loadDesktopItems()), "main"));
 		
 		shortcutPager = (ViewPager) findViewById(R.id.shortcut_pager);
-		shortcutPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, splitItems(5, makeSlots(6)), "shortcut"));
+		shortcutPager.setAdapter(new DesktopPagerAdapter(DesktopActivity.this, splitItems(5, makeSlots(6)), "shortcut"));
 	}
 	
 	private List<DesktopItem> makeSlots(int count) {
@@ -126,8 +126,8 @@ public class DesktopActivity extends Activity {
 		throw new IllegalStateException();
 	}
 	
-	public DesktopPageAdapter getPagerAdapter(View v) {
-		return (DesktopPageAdapter) getViewPagerByGroupName((String) v.getTag(R.id.group_name)).getAdapter();
+	public DesktopPagerAdapter getPagerAdapter(View v) {
+		return (DesktopPagerAdapter) getViewPagerByGroupName((String) v.getTag(R.id.group_name)).getAdapter();
 	}
 
 	public int getViewPagerLayout(String groupName) {

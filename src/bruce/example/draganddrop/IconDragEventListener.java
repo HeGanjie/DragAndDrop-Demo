@@ -51,7 +51,7 @@ public class IconDragEventListener implements OnDragListener {
 		}
 	}
 	
-	private DesktopPageAdapter outCtrl, inCtrl;
+	private DesktopPagerAdapter outCtrl, inCtrl;
 	private int outPageIndex = -1, outPos = -1, inPageIndex = -1, inPos = -1;
 	private boolean isInDir = false;
 
@@ -75,7 +75,7 @@ public class IconDragEventListener implements OnDragListener {
 	}
 
 	public void dragTo(View v) {
-		DesktopPageAdapter adapter = activity.getPagerAdapter(v);
+		DesktopPagerAdapter adapter = activity.getPagerAdapter(v);
 		int currentPageIndex = getPageIndex(v);
 		int pos = (Integer) v.getTag(R.id.pos_extra);
 		if (adapter == outCtrl

@@ -11,13 +11,13 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 import bruce.common.functional.PersistentVector;
 
-public class DesktopPageAdapter extends PagerAdapter {
+public class DesktopPagerAdapter extends PagerAdapter {
 	private final DesktopActivity activity;
 	private final List<View> pageViews = new ArrayList<View>();
 	public PersistentVector<PersistentVector<DesktopItem>> bakPageItems;
 	private final String groupName;
 	
-	public DesktopPageAdapter(DesktopActivity act, PersistentVector<PersistentVector<DesktopItem>> allItems, String group) {
+	public DesktopPagerAdapter(DesktopActivity act, PersistentVector<PersistentVector<DesktopItem>> allItems, String group) {
 		activity = act;
 		groupName = group;
 		bakPageItems = allItems;

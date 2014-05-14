@@ -26,7 +26,6 @@ public class Editing extends DesktopState {
 		_activity.state = new Dragging(_activity);
 		v.startDrag(null, new DragShadowBuilder(v), null, 0);
 		_activity.dragEventListener.startDrag(v);
-		//_activity.pagerAdapter.startDrag((Integer) v.getTag(R.id.pos_extra));
 	}
 
 }
