@@ -1,6 +1,5 @@
 package bruce.example.draganddrop;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -16,13 +15,14 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import bruce.common.functional.Func1;
 import bruce.common.functional.LambdaUtils;
+import bruce.common.functional.PersistentVector;
 import bruce.common.utils.CommonUtils;
 import bruce.example.draganddrop.state.desktop.DesktopState;
 import bruce.example.draganddrop.state.desktop.Idle;
 
 public class DesktopActivity extends Activity {
 	private static final String APP_SEQUENCES = "appSequences";
-	public final int pageSize = 12;
+	public final int pageSize = 16;
 	public DesktopState state;
 	public ViewPager mainPager, shortcutPager;
 	public IconDragEventListener dragEventListener;
@@ -43,13 +43,26 @@ public class DesktopActivity extends Activity {
 		state = new Idle(this);
 		dragEventListener = new IconDragEventListener(this);
 		mainPager = (ViewPager) findViewById(R.id.main_pager);
-		mainPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, pageSize, loadDesktopItems(), "main"));
+		mainPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, splitItems(pageSize, loadDesktopItems()), "main"));
 		
 		shortcutPager = (ViewPager) findViewById(R.id.shortcut_pager);
-		List<DesktopItem> slots = Arrays.asList(DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT, DesktopItem.SLOT);
-		shortcutPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, 5, slots, "shortcut"));
+		shortcutPager.setAdapter(new DesktopPageAdapter(DesktopActivity.this, splitItems(5, makeSlots(6)), "shortcut"));
 	}
 	
+	private List<DesktopItem> makeSlots(int count) {
+		return LambdaUtils.select(CommonUtils.range(0, count), new Func1<DesktopItem, Integer>() {
+			@Override
+			public DesktopItem call(Integer arg0) { return DesktopItem.SLOT; }
+		});
+	}
+
+	private PersistentVector<PersistentVector<DesktopItem>> splitItems(int pageSize, List<DesktopItem> items) {
+		while (items.size() % pageSize != 0) {
+			items.add(DesktopItem.SLOT);
+		}
+		return Utils.partitionAll(pageSize, items);
+	}
+
 	private int getPageSize() {
 		float itemWidth = Utils.dp2Px(60, this);
 		float itemHeight = Utils.dp2Px(95, this);
@@ -74,9 +87,6 @@ public class DesktopActivity extends Activity {
 			}
 		});
 		if (CommonUtils.isStringNullOrWriteSpace(appSequences)) {
-			while (items.size() % pageSize != 0) {
-				items.add(DesktopItem.SLOT);
-			}
 			return items;
 		} else {
 			final Map<String, DesktopItem> map = LambdaUtils.toMap(items, DesktopItem.pkgNameSelector);

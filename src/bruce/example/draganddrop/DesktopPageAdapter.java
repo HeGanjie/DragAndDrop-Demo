@@ -17,16 +17,16 @@ public class DesktopPageAdapter extends PagerAdapter {
 	public PersistentVector<PersistentVector<DesktopItem>> bakPageItems;
 	private final String groupName;
 	
-	public DesktopPageAdapter(DesktopActivity act, int pageSize, List<DesktopItem> allItems, String groupName) {
+	public DesktopPageAdapter(DesktopActivity act, PersistentVector<PersistentVector<DesktopItem>> allItems, String group) {
 		activity = act;
-		this.groupName = groupName;
+		groupName = group;
+		bakPageItems = allItems;
 		OnTouchListener tl = new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				return event.getAction() == MotionEvent.ACTION_MOVE;
 			}
 		};
-		bakPageItems = Utils.partitionAll(pageSize, allItems);
 		for (int i = 0; i < bakPageItems.size(); i++) {
 			View desktopView = act.getLayoutInflater().inflate(activity.getViewPagerLayout(groupName), null);
 			
